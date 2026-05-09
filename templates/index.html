@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Interview Question Generator</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --brand:        #4F46E5;
+      --brand-dark:   #3730A3;
+      --brand-light:  #EEF2FF;
+      --success:      #059669;
+      --error:        #DC2626;
+      --text:         #111827;
+      --muted:        #6B7280;
+      --border:       #E5E7EB;
+      --bg:           #F9FAFB;
+      --card:         #FFFFFF;
+      --radius:       12px;
+      --shadow:       0 4px 24px rgba(0,0,0,0.08);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 48px 16px 64px;
+    }
+
+    /* ── Header ── */
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+      max-width: 560px;
+    }
+
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .logo-icon {
+      width: 40px; height: 40px;
+      background: var(--brand);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .logo-icon svg { width: 22px; height: 22px; fill: white; }
+
+    .logo-text {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--brand);
+      letter-spacing: -0.3px;
+    }
+
+    h1 {
+      font-size: clamp(1.6rem, 4vw, 2.1rem);
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: var(--text);
+      line-height: 1.2;
+      margin-bottom: 12px;
+    }
+
+    h1 span { color: var(--brand); }
+
+    header p {
+      font-size: 1rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* ── Card ── */
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 36px;
+      width: 100%;
+      max-width: 560px;
+    }
+
+    /* ── Form ── */
+    label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      padding: 12px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.975rem;
+      color: var(--text);
+      background: var(--bg);
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+    }
+
+    input[type="text"]:focus {
+      border-color: var(--brand);
+      box-shadow: 0 0 0 3px rgba(79,70,229,0.12);
+      background: white;
+    }
+
+    input[type="text"]::placeholder { color: #9CA3AF; }
+
+    button {
+      padding: 12px 22px;
+      background: var(--brand);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      white-space: nowrap;
+    }
+
+    button:hover { background: var(--brand-dark); }
+    button:active { transform: scale(0.98); }
+    button:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    .hint {
+      margin-top: 8px;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    /* ── Divider ── */
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 28px 0;
+    }
+
+    /* ── Loading ── */
+    #loading {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      padding: 20px 0;
+    }
+
+    .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid var(--brand-light);
+      border-top-color: var(--brand);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    #loading p {
+      font-size: 0.9rem;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    /* ── Error ── */
+    #error-box {
+      display: none;
+      background: #FEF2F2;
+      border: 1px solid #FECACA;
+      border-radius: 8px;
+      padding: 14px 16px;
+      color: var(--error);
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+
+    /* ── Results ── */
+    #results { display: none; }
+
+    #results h2 {
+      font-size: 0.875rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+
+    .question-card {
+      display: flex;
+      gap: 14px;
+      padding: 18px;
+      border-radius: 10px;
+      background: var(--brand-light);
+      border: 1px solid #C7D2FE;
+      margin-bottom: 12px;
+      opacity: 0;
+      transform: translateY(8px);
+      animation: fadeUp 0.35s ease forwards;
+    }
+
+    .question-card:nth-child(2) { animation-delay: 0.1s; }
+    .question-card:nth-child(3) { animation-delay: 0.2s; }
+
+    @keyframes fadeUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .q-number {
+      flex-shrink: 0;
+      width: 28px; height: 28px;
+      background: var(--brand);
+      color: white;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .q-text {
+      font-size: 0.975rem;
+      line-height: 1.6;
+      color: var(--text);
+      padding-top: 3px;
+    }
+
+    .result-meta {
+      margin-top: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.8rem;
+      color: var(--success);
+      font-weight: 600;
+    }
+
+    .result-meta svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+    /* ── Footer ── */
+    footer {
+      margin-top: 32px;
+      font-size: 0.78rem;
+      color: #9CA3AF;
+      text-align: center;
+    }
+
+    footer a { color: var(--brand); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+      </svg>
+    </div>
+    <span class="logo-text">InterviewAI</span>
+  </div>
+  <h1>Generate <span>tailored</span> interview questions instantly</h1>
+  <p>Enter any job title and get 3 thoughtful, role-specific interview questions powered by Claude AI.</p>
+</header>
+
+<div class="card">
+  <label for="job-title">Job Title</label>
+  <div class="input-row">
+    <input
+      type="text"
+      id="job-title"
+      placeholder="e.g. Customer Success Manager"
+      maxlength="100"
+      autocomplete="off"
+    />
+    <button id="generate-btn" onclick="generateQuestions()">Generate</button>
+  </div>
+  <p class="hint">Try: Product Manager, Software Engineer, Data Analyst, Marketing Director…</p>
+
+  <div class="divider"></div>
+
+  <!-- Loading state -->
+  <div id="loading">
+    <div class="spinner"></div>
+    <p>Crafting your questions with Claude AI…</p>
+  </div>
+
+  <!-- Error state -->
+  <div id="error-box"></div>
+
+  <!-- Results -->
+  <div id="results">
+    <h2>Interview Questions</h2>
+    <div id="questions-list"></div>
+    <div class="result-meta">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+      Generated by Claude (claude-sonnet-4-20250514) via Anthropic API
+    </div>
+  </div>
+</div>
+
+<footer>
+  Built by <a href="https://vickkykruzprogramming.dev" target="_blank">Victor Chukwuemeka</a>
+  &nbsp;·&nbsp; Powered by <a href="https://anthropic.com" target="_blank">Anthropic Claude</a>
+</footer>
+
+<script>
+  const input    = document.getElementById('job-title');
+  const btn      = document.getElementById('generate-btn');
+  const loading  = document.getElementById('loading');
+  const errorBox = document.getElementById('error-box');
+  const results  = document.getElementById('results');
+  const list     = document.getElementById('questions-list');
+
+  // Allow Enter key to submit
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') generateQuestions();
+  });
+
+  function setLoading(isLoading) {
+    btn.disabled = isLoading;
+    btn.textContent = isLoading ? 'Generating…' : 'Generate';
+    loading.style.display = isLoading ? 'flex' : 'none';
+  }
+
+  function showError(message) {
+    errorBox.textContent = message;
+    errorBox.style.display = 'block';
+  }
+
+  function clearState() {
+    errorBox.style.display = 'none';
+    errorBox.textContent   = '';
+    results.style.display  = 'none';
+    list.innerHTML         = '';
+  }
+
+  async function generateQuestions() {
+    const jobTitle = input.value.trim();
+
+    if (!jobTitle) {
+      input.focus();
+      showError('Please enter a job title before generating.');
+      return;
+    }
+
+    clearState();
+    setLoading(true);
+
+    try {
+      const response = await fetch('/api/questions', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ job_title: jobTitle }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || data.error) {
+        showError(data.error || 'Something went wrong. Please try again.');
+        return;
+      }
+
+      // Render questions
+      data.questions.forEach((question, index) => {
+        const card = document.createElement('div');
+        card.className = 'question-card';
+        card.innerHTML = `
+          <div class="q-number">${index + 1}</div>
+          <div class="q-text">${escapeHtml(question)}</div>
+        `;
+        list.appendChild(card);
+      });
+
+      results.style.display = 'block';
+
+    } catch (err) {
+      showError('Network error. Please check your connection and try again.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.appendChild(document.createTextNode(text));
+    return div.innerHTML;
+  }
+</script>
+
+</body>
+</html>
